@@ -1,18 +1,18 @@
 # ClearTake download website
 
-The repository includes a static Vercel website in `website/` and a separate desktop build workflow. Vercel hosts HTML/CSS/JavaScript. GitHub builds and stores the large Mac/Windows packages.
+The repository includes a static Vercel website in `engine/website/` and a separate desktop build workflow. Vercel hosts HTML/CSS/JavaScript. GitHub builds and stores the large Mac/Windows packages.
 
 ## Deploy on Vercel
 
 1. In your Vercel account choose **Add New → Project** and import **gopalbogati/Cleartake**.
-2. Keep **Root Directory** at the repository root (`./`), and use the **Other** framework preset.
+2. Use the **Other** framework preset. Both **Root Directory** settings are supported: `./` (repository root) or `engine` (standalone download site). The existing Vercel project named `engine` can keep its `engine` root directory.
 3. The committed `vercel.json` supplies these settings:
    - Install command: `node --version` (the site has no dependencies to install).
    - Build command: `node scripts/build-website.cjs`.
    - Output directory: `website`.
 4. Click **Deploy**. Vercel gives the project its own URL. Optional: add your domain in the project's Domains settings.
 
-Do not use the desktop `npm run build` command as the website build. The website build copies the app icon and writes the source version; it does not install Electron, FFmpeg or TensorFlow. No API key or environment secret is needed for the site. Official configuration reference: https://vercel.com/docs/project-configuration/vercel-json
+Do not use the desktop `npm run build` command as the website build. The website build uses the included app icon and writes the source version; it does not install Electron, FFmpeg or TensorFlow. No API key or environment secret is needed for the site. Official configuration reference: https://vercel.com/docs/project-configuration/vercel-json
 
 ## Build the app ZIPs
 
@@ -31,7 +31,7 @@ Output app filenames:
 
 GitHub wraps workflow artifacts in an extra ZIP. That outer artifact ZIP is not the app ZIP. The release workflow extracts artifacts and attaches the actual app packages. For a manual release, extract the artifact before attaching its inner app ZIP and checksum.
 
-Use a tag matching the app version, e.g. `v0.1.0`. Future versions must update `package.json` and package-lock.json. The workflow refuses to overwrite an existing release with the same tag. A prerelease is displayed as a development preview. Download buttons appear only for valid, uploaded assets belonging to that release. Source-only releases, missing assets and API failures never become fake download links.
+Use a tag matching the app version, e.g. `v0.1.0`. Future versions must update `package.json`, package-lock.json and `engine/package.json` together. The workflow refuses to overwrite an existing release with the same tag. A prerelease is displayed as a development preview. Download buttons appear only for valid, uploaded assets belonging to that release. Source-only releases, missing assets and API failures never become fake download links.
 
 ## Supported build targets and current validation
 
@@ -46,6 +46,10 @@ Keep the third-party notices in the packages and satisfy the exact media-binary 
 ## Release lookup
 
 The browser makes one public request to `https://api.github.com/repos/gopalbogati/Cleartake/releases?per_page=30`. It picks the most recently published release with a supported app ZIP. Missing platforms remain unavailable. GitHub rate limits or network errors show a fallback link to Releases. No tokens are placed in the website, and no recording content is sent.
+
+## Build directory layout
+
+`engine/website/` contains the website source and icon. `engine/scripts/build-website.cjs` builds it using only files inside `engine`; it does not need access to the parent directory. The repository-root script delegates to that same builder and writes its output into the root `website/` directory. Both roots have a matching `vercel.json`, so the existing build command and output setting work unchanged.
 
 ## Local website check
 

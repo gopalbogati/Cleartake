@@ -1,10 +1,10 @@
 name: Check download website
 on:
   pull_request:
-    paths: ['website/**', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'vercel.json']
+    paths: ['engine/website/**', 'engine/scripts/build-website.cjs', 'engine/package.json', 'engine/vercel.json', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'tests/website-build.test.cjs', 'vercel.json', '.github/workflows/website.yml']
   push:
     branches: [main]
-    paths: ['website/**', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'vercel.json']
+    paths: ['engine/website/**', 'engine/scripts/build-website.cjs', 'engine/package.json', 'engine/vercel.json', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'tests/website-build.test.cjs', 'vercel.json', '.github/workflows/website.yml']
 permissions:
   contents: read
 jobs:
@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/build-website.cjs
-      - run: node --test tests/downloads.test.cjs
+      - run: node --test tests/downloads.test.cjs tests/website-build.test.cjs
