@@ -37,8 +37,8 @@ else
   label=Windows-x64
 fi
 (cd "$work/zlib" && ./configure --static --prefix="$prefix" && make -j "$threads" && make install)
-(cd "$work/x264" && ./configure --prefix="$prefix" --enable-static --disable-cli --disable-opencl --enable-pic "${x264_extra[@]}" && make -j "$threads" && make install)
-(cd "$work/ffmpeg" && ./configure --prefix="$prefix" --disable-autodetect --disable-network --disable-doc --disable-debug --disable-ffplay --enable-gpl --enable-libx264 --enable-zlib --enable-static --disable-shared --pkg-config-flags=--static --extra-cflags="$CFLAGS" --extra-ldflags="$LDFLAGS" "${extra[@]}" && make -j "$threads" && make install)
+(cd "$work/x264" && ./configure --prefix="$prefix" --enable-static --disable-cli --disable-opencl --enable-pic ${x264_extra[@]+"${x264_extra[@]}"} && make -j "$threads" && make install)
+(cd "$work/ffmpeg" && ./configure --prefix="$prefix" --disable-autodetect --disable-network --disable-doc --disable-debug --disable-ffplay --enable-gpl --enable-libx264 --enable-zlib --enable-static --disable-shared --pkg-config-flags=--static --extra-cflags="$CFLAGS" --extra-ldflags="$LDFLAGS" ${extra[@]+"${extra[@]}"} && make -j "$threads" && make install)
 cp "$root/scripts/build-media.sh" "$work/source/"
 cp "$work/ffmpeg/ffbuild/config.log" "$work/source/ffmpeg-config.log"
 cp "$work/ffmpeg/ffbuild/config.mak" "$work/source/ffmpeg-config.mak"
