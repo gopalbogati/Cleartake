@@ -5,7 +5,7 @@ const dest=path.resolve('.build/notices');fs.mkdirSync(dest,{recursive:true});
 for(const name of ['electron','ffmpeg-static','ffprobe-static','@resvg/resvg-js']){const root=path.dirname(require.resolve(name+'/package.json')),target=path.join(dest,name);fs.mkdirSync(target,{recursive:true});for(const file of fs.readdirSync(root)){if(/license|copying|notice/i.test(file)&&fs.statSync(path.join(root,file)).isFile())fs.copyFileSync(path.join(root,file),path.join(target,file));}if(name==='electron')for(const file of ['LICENSE','LICENSES.chromium.html']){const source=path.join(root,'dist',file);if(fs.existsSync(source))fs.copyFileSync(source,path.join(target,file));}}
 fs.writeFileSync(path.join(dest,'ffmpeg-build.txt'),cp.execFileSync(require('ffmpeg-static'),['-version']));
 fs.writeFileSync(path.join(dest,'ffprobe-build.txt'),cp.execFileSync(require('ffprobe-static').path,['-version']));
-const python=path.resolve('.build/venv/bin/python3');
+const python=path.resolve('.build/venv',process.platform==='win32'?'Scripts/python.exe':'bin/python3');
 cp.execFileSync(python,['-c',`import importlib.metadata as m, pathlib, shutil, json
 out=pathlib.Path('.build/notices/python');out.mkdir(parents=True,exist_ok=True)
 versions={}

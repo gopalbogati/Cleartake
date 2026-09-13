@@ -32,9 +32,13 @@ TEST_FFMPEG="$(node -p 'require("ffmpeg-static")')" TEST_FFPROBE="$(node -p 'req
 node scripts/check-runtime.cjs .build/sound-dist/cleartake-sound/cleartake-sound .build/yamnet
 CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac
 node scripts/check-runtime.cjs release/mac-arm64/ClearTake.app/Contents/Resources/sound-runtime/cleartake-sound release/mac-arm64/ClearTake.app/Contents/Resources/sound-model
-for dmg in release/ClearTake-Independent-*-arm64.dmg; do
+for dmg in release/ClearTake-Mac-*-arm64.dmg; do
   hdiutil verify "$dmg"
   shasum -a 256 "$dmg" > "$dmg.sha256"
   echo "Built: $PWD/$dmg"
+done
+for archive in release/ClearTake-Mac-*-arm64.zip; do
+  unzip -tq "$archive"
+  shasum -a 256 "$archive" > "$archive.sha256"
 done
 echo 'This development build is ad-hoc signed, not Apple-notarized. Test microphone, screen capture, webcam, playback and export on your Mac before distributing it.'

@@ -6,7 +6,7 @@
 
 ClearTake is a local macOS screen recorder and editor with sneeze/cough detection, reversible audio muting, video cuts, captions and MP4 export.
 
-Source code is available. A downloadable DMG release has not been published.
+Source code is available. Downloadable app packages are published separately in [GitHub Releases](https://github.com/gopalbogati/Cleartake/releases).
 
 **Record → review sounds → mute or cut → export MP4.**
 
@@ -30,6 +30,14 @@ ClearTake 0.1 is a new, independently written implementation with a new interfac
 
 Original media is retained. Edits live in a project file until you render/export. There are no accounts, subscriptions, API keys, analytics or recording uploads.
 
+## Download website and Windows/Mac ZIPs
+
+A Vercel-ready download website is included. Import this repository into Vercel with the root directory set to `./`; `vercel.json` configures the static website build. It displays only app ZIPs that exist in published GitHub releases.
+
+Run **Actions → Build Mac and Windows downloads** to build both platforms and prepare a draft prerelease. Test the packages, review the draft, then publish it to activate the website's download buttons. See [website deployment and release instructions](docs/DOWNLOAD-WEBSITE.md).
+
+On Windows with Node 22+ x64 and Python 3.12 installed, run `Build-Windows.cmd` to create a local Windows ZIP. Extract the full ZIP before opening ClearTake.exe.
+
 ## Build the Mac installer
 
 **Apple Silicon (M1 or newer), macOS 14.2 or later.** Computer audio availability also depends on macOS permissions and the chosen capture source.
@@ -50,7 +58,7 @@ Original media is retained. Edits live in a project file until you render/export
 The script installs dependencies, downloads the local sound model, bundles the Python detector, runs checks and creates:
 
 ```text
-release/ClearTake-Independent-0.1.0-arm64.dmg
+release/ClearTake-Mac-0.1.0-arm64.dmg
 ```
 
 The first build downloads several large dependencies and needs several GB of free disk space. CMake and Swift build tools are not needed by this implementation. No model/API credentials are needed. Subsequent app recording and sound analysis run locally.
@@ -118,6 +126,6 @@ The app's main-process entry is `app/main.cjs`. Its isolated UI is under `app/ui
 
 ## First-release boundaries
 
-This is a working source implementation, not a claim of complete feature parity with professional editors. It does not yet include multitrack clip rearrangement, transitions, automatic cursor zoom, zoom keyframes, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins or cloud sharing. Caption import is supported; automatic caption generation is not. This build targets Apple Silicon only. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
+This is a working source implementation, not a claim of complete feature parity with professional editors. It does not yet include multitrack clip rearrangement, transitions, automatic cursor zoom, zoom keyframes, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins or cloud sharing. Caption import is supported; automatic caption generation is not. Build targets are Apple Silicon Mac and Windows x64; native installation and recording still need validation on each platform. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
 
 Application code: [MIT](LICENSE). Bundled third-party components retain their own licenses.

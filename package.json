@@ -10,7 +10,9 @@
     "build": "esbuild app/ui/editor.js --bundle --format=iife --outfile=app/ui/bundle.js",
     "start": "npm run build && electron .",
     "test": "node --test tests/*.test.cjs",
-    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never"
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --arm64 --publish never",
+    "dist:win": "npm run build && electron-builder --win zip --x64 --publish never",
+    "build:website": "node scripts/build-website.cjs"
   },
   "dependencies": {
     "@resvg/resvg-js": "2.6.2",
@@ -70,10 +72,16 @@
           "arch": [
             "arm64"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
         }
       ],
       "icon": "assets/icons/app.icns",
-      "artifactName": "ClearTake-Independent-${version}-${arch}.${ext}",
+      "artifactName": "ClearTake-Mac-${version}-${arch}.${ext}",
       "identity": "-",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "ClearTake records your voice when microphone recording is enabled.",
@@ -96,6 +104,19 @@
           "path": "/Applications"
         }
       ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icons/app.ico",
+      "artifactName": "ClearTake-Windows-${version}-${arch}.${ext}",
+      "signAndEditExecutable": false
     }
   }
 }

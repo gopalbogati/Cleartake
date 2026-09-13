@@ -1,0 +1,19 @@
+name: Check download website
+on:
+  pull_request:
+    paths: ['website/**', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'vercel.json']
+  push:
+    branches: [main]
+    paths: ['website/**', 'scripts/build-website.cjs', 'tests/downloads.test.cjs', 'vercel.json']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/build-website.cjs
+      - run: node --test tests/downloads.test.cjs

@@ -1,0 +1,91 @@
+name: Build Mac and Windows downloads
+on:
+  workflow_dispatch:
+    inputs:
+      prepare_draft:
+        description: Prepare a draft release after both builds pass
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: desktop-downloads-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  package:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Mac Apple Silicon
+            os: macos-14
+            command: bash scripts/build-mac.sh
+            shell: bash
+            artifact: ClearTake-Mac-arm64
+          - name: Windows x64
+            os: windows-2022
+            command: node scripts/build-windows.cjs
+            shell: pwsh
+            artifact: ClearTake-Windows-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and check bundled detector
+        shell: ${{ matrix.shell }}
+        run: ${{ matrix.command }}
+      - name: Add build identity
+        shell: bash
+        run: |
+          node -e 'require("fs").writeFileSync("release/BUILD-INFO.json",JSON.stringify({version:require("./package.json").version,commit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,platform:process.platform,arch:process.arch},null,2))'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            release/*.zip
+            release/*.dmg
+            release/*.sha256
+            release/BUILD-INFO.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Next step
+        shell: bash
+        run: |
+          echo 'Download this artifact and test the app. Then attach the app ZIP (inside the artifact) and checksum to a GitHub prerelease matching the package version. The website finds published assets automatically.' >> "$GITHUB_STEP_SUMMARY"
+  draft:
+    name: Prepare draft release
+    if: ${{ inputs.prepare_draft }}
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ClearTake-*
+          path: release-assets
+          merge-multiple: false
+      - name: Create source-version draft with app downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$(node -p 'require("./package.json").version')"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists. Update the app version before creating another release."
+            exit 1
+          fi
+          mapfile -d '' assets < <(find release-assets -type f \( -name '*.zip' -o -name '*.dmg' -o -name '*.sha256' \) -print0)
+          if [[ ${#assets[@]} -lt 5 ]]; then echo 'Expected Mac/Windows packages and checksums are missing.'; exit 1; fi
+          gh release create "$tag" "${assets[@]}" --target "$GITHUB_SHA" --draft --prerelease --title "ClearTake $tag — Development Preview" --notes-file docs/RELEASE-NOTES.md
+          echo 'Draft release created. Test the apps and review the release notes before publishing. The website lists only published releases.' >> "$GITHUB_STEP_SUMMARY"

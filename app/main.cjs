@@ -26,8 +26,7 @@ async function exclusive(label,task){
 }
 
 function toolsForSound(){
-  return app.isPackaged?{binary:path.join(process.resourcesPath,'sound-runtime','cleartake-sound'),args:[],model:path.join(process.resourcesPath,'sound-model')}:
-    {binary:path.join(app.getAppPath(),'.build','venv','bin','python3'),args:[path.join(app.getAppPath(),'engine','audio_scan.py')],model:path.join(app.getAppPath(),'.build','yamnet')};
+  return require('../engine/runtime.cjs').soundRuntime({packaged:app.isPackaged,platform:process.platform,root:app.getAppPath(),resources:process.resourcesPath});
 }
 
 async function analyze(id){

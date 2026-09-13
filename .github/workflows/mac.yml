@@ -22,6 +22,7 @@ jobs:
         with:
           name: ClearTake-Apple-Silicon
           path: |
+            release/*.zip
             release/*.dmg
             release/*.sha256
           if-no-files-found: error
