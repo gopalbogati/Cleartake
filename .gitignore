@@ -1,0 +1,8 @@
+node_modules/
+.build/
+release/
+app/ui/bundle.js
+__pycache__/
+*.pyc
+*.zip
+.DS_Store
