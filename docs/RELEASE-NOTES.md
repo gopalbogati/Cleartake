@@ -16,6 +16,6 @@ The build workflow checks media exports and loads the bundled sound detector on 
 
 Original recordings are retained. Only exported media includes the enabled mute/cut edits.
 
-## Before publishing this draft
+## Media-tool source
 
-Test both native builds and record any known issues here. Include applicable third-party notices and provide corresponding FFmpeg/FFprobe source/build materials through a license-compliant route as described in THIRD-PARTY.md. This draft is not a claim of completed native testing or binary licensing review.
+The release includes matching FFmpeg, x264 and zlib source archives, the build script, compiler identity and configure logs in the two `ClearTake-Media-Source-*.tar.gz` files. Dependency notices are also bundled inside the app. These source archives are for developers and are not needed to run ClearTake.

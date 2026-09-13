@@ -4,16 +4,20 @@ on:
     branches: [main]
     paths:
       - .github/workflows/desktop-downloads.yml
+      - scripts/build-media.sh
+      - scripts/build-mac.sh
+      - scripts/build-windows.cjs
+      - scripts/install-built-media.cjs
   workflow_dispatch:
     inputs:
-      prepare_draft:
-        description: Prepare a draft release after both builds pass
+      publish_downloads:
+        description: Publish a development preview after both builds pass
         type: boolean
         default: true
 permissions:
   contents: read
 concurrency:
-  group: desktop-downloads-${{ github.ref }}
+  group: desktop-downloads-${{ github.sha }}
   cancel-in-progress: false
 jobs:
   package:
@@ -39,6 +43,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install Mac media build tools
+        if: runner.os == 'macOS'
+        run: brew install pkg-config
+      - uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make nasm diffutils
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkgconf
+      - name: Build Mac media tools and retain their source
+        if: runner.os == 'macOS'
+        shell: bash
+        run: bash scripts/build-media.sh
+      - name: Build Windows media tools and retain their source
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: bash scripts/build-media.sh
       - name: Build Mac and check bundled detector
         if: runner.os == 'macOS'
         shell: bash
@@ -58,6 +82,7 @@ jobs:
             release/*.zip
             release/*.dmg
             release/*.sha256
+            release/*Source*.tar.gz
             release/BUILD-INFO.json
           if-no-files-found: error
           retention-days: 30
@@ -65,9 +90,9 @@ jobs:
         shell: bash
         run: |
           echo 'Download this artifact and test the app. Then attach the app ZIP (inside the artifact) and checksum to a GitHub prerelease matching the package version. The website finds published assets automatically.' >> "$GITHUB_STEP_SUMMARY"
-  draft:
-    name: Prepare draft release
-    if: ${{ inputs.prepare_draft }}
+  publish:
+    name: Publish development downloads
+    if: ${{ github.event_name == 'push' || inputs.publish_downloads }}
     needs: package
     runs-on: ubuntu-latest
     permissions:
@@ -79,7 +104,7 @@ jobs:
           pattern: ClearTake-*
           path: release-assets
           merge-multiple: false
-      - name: Create source-version draft with app downloads
+      - name: Publish app downloads and matching media source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -90,7 +115,10 @@ jobs:
             echo "Release $tag already exists. Update the app version before creating another release."
             exit 1
           fi
-          mapfile -d '' assets < <(find release-assets -type f \( -name '*.zip' -o -name '*.dmg' -o -name '*.sha256' \) -print0)
-          if [[ ${#assets[@]} -lt 5 ]]; then echo 'Expected Mac/Windows packages and checksums are missing.'; exit 1; fi
-          gh release create "$tag" "${assets[@]}" --target "$GITHUB_SHA" --draft --prerelease --title "ClearTake $tag — Development Preview" --notes-file docs/RELEASE-NOTES.md
-          echo 'Draft release created. Test the apps and review the release notes before publishing. The website lists only published releases.' >> "$GITHUB_STEP_SUMMARY"
+          mapfile -d '' assets < <(find release-assets -type f \( -name '*.zip' -o -name '*.dmg' -o -name '*.sha256' -o -name '*Source*.tar.gz' \) -print0)
+          version="${tag#v}"
+          for expected in "ClearTake-Mac-$version-arm64.zip" "ClearTake-Mac-$version-arm64.dmg" "ClearTake-Windows-$version-x64.zip" 'ClearTake-Media-Source-Mac-arm64.tar.gz' 'ClearTake-Media-Source-Windows-x64.tar.gz'; do
+            if [[ $(find release-assets -name "$expected" -type f | wc -l) -ne 1 ]]; then echo "Missing unique asset: $expected"; exit 1; fi
+          done
+          gh release create "$tag" "${assets[@]}" --target "$GITHUB_SHA" --prerelease --title "ClearTake $tag — Development Preview" --notes-file docs/RELEASE-NOTES.md
+          echo 'Development preview published with native build checks and matching media-tool sources. Native recording still needs device testing.' >> "$GITHUB_STEP_SUMMARY"

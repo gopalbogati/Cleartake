@@ -8,7 +8,7 @@ const node=args=>run(process.execPath,args);
 const npm=args=>run('npm.cmd',args,{shell:true});
 run('python',['-c','import sys; assert sys.version_info[:2] == (3,12), "Use Python 3.12"']);
 npm(['ci','--ignore-scripts','--no-audit','--no-fund']);
-node(['node_modules/ffmpeg-static/install.js']);node(['node_modules/electron/install.js']);npm(['run','build']);
+if(fs.existsSync('.build/media/prefix/bin/ffmpeg.exe'))node(['scripts/install-built-media.cjs']);else node(['node_modules/ffmpeg-static/install.js']);node(['node_modules/electron/install.js']);npm(['run','build']);
 run('python',['-m','venv','.build/venv']);const python=path.resolve('.build/venv/Scripts/python.exe');
 run(python,['-m','pip','install','--upgrade','pip']);
 run(python,['-m','pip','install','-r','engine/requirements.txt','pyinstaller==6.16.0']);

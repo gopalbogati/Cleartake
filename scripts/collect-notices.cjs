@@ -19,3 +19,5 @@ for d in m.distributions():
 (out/'versions.json').write_text(json.dumps(versions,indent=2))`],{stdio:'inherit'});
 fs.copyFileSync('assets/YAMNet-LICENSE.txt',path.join(dest,'YAMNet-LICENSE.txt'));
 console.log('Collected dependency notices and exact media-tool build versions.');
+
+if(fs.existsSync('.build/media/source'))fs.cpSync('.build/media/source',path.join(dest,'media-source'),{recursive:true,filter:source=>!source.endsWith('.tar.gz')});

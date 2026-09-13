@@ -13,7 +13,11 @@ done
 node -e 'if(Number(process.versions.node.split(".")[0])<22)throw Error("Node 22 or later is required")'
 mkdir -p .build
 npm ci --ignore-scripts --no-audit --no-fund
-node node_modules/ffmpeg-static/install.js
+if [[ -f .build/media/prefix/bin/ffmpeg ]]; then
+  node scripts/install-built-media.cjs
+else
+  node node_modules/ffmpeg-static/install.js
+fi
 node node_modules/electron/install.js
 npm run build
 python3.12 -m venv .build/venv
