@@ -1,3 +1,9 @@
+## 0.1.1 startup fix
+
+Creates the settings directory before registering it with Electron, fixing a first-launch failure on computers without an existing ClearTake profile. Startup errors now show a diagnostic message instead of leaving the app without a window.
+
+This release adds a packaged-app launch check on Mac and Windows. It verifies that the home window loads and that the preload bridge can list projects. Mac code signatures are also checked before publishing. These checks do not replace live recording tests or Apple notarization.
+
 ClearTake development preview for Apple Silicon Mac and Windows x64.
 
 ## Downloads

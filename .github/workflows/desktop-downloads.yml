@@ -8,6 +8,9 @@ on:
       - scripts/build-mac.sh
       - scripts/build-windows.cjs
       - scripts/install-built-media.cjs
+      - scripts/check-app-startup.cjs
+      - app/**
+      - package.json
   workflow_dispatch:
     inputs:
       publish_downloads:

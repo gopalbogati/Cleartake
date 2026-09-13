@@ -6,7 +6,10 @@ const {Projects}=require('../engine/projects.cjs');
 const {probe,run,exportVideo,waveform}=require('../engine/media.cjs');
 const {cleanEdits,parseSrt}=require('../engine/edit-plan.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'ctmedia',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
-app.setName('ClearTake');app.setPath('userData',path.join(app.getPath('appData'),'ClearTake Independent'));
+app.setName('ClearTake');
+const settingsDirectory=path.join(app.getPath('appData'),'ClearTake Independent');
+syncFs.mkdirSync(settingsDirectory,{recursive:true});
+app.setPath('userData',settingsDirectory);
 let window,projects,choice,job=null,recordingId=null;
 const unpack=p=>app.isPackaged?p.replace(/app\.asar([/\\])/,'app.asar.unpacked$1'):p;
 const ffmpeg=()=>unpack(require('ffmpeg-static'));
@@ -127,5 +130,9 @@ app.whenReady().then(async()=>{
   window.on('close',event=>{if(recordingId||job){const answer=dialog.showMessageBoxSync(window,{type:'warning',message:'A recording or processing task is still running.',detail:'Stay in ClearTake to save your work, or quit and leave it incomplete.',buttons:['Stay','Quit'],defaultId:0,cancelId:0});
     if(answer===0)event.preventDefault();else job?.abort();}});
   await window.loadFile(path.join(__dirname,'ui','index.html'));
+}).catch(error=>{
+  console.error('ClearTake startup failed:',error);
+  dialog.showErrorBox('ClearTake could not start',error.stack||String(error));
+  app.quit();
 });
 app.on('window-all-closed',()=>app.quit());

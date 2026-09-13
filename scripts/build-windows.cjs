@@ -23,5 +23,6 @@ npm(['test']);run(python,['tests/sound_test.py']);
 node(['scripts/check-runtime.cjs','.build/sound-dist/cleartake-sound/cleartake-sound.exe','.build/yamnet']);
 process.env.CSC_IDENTITY_AUTO_DISCOVERY='false';npm(['run','dist:win']);
 node(['scripts/check-runtime.cjs','release/win-unpacked/resources/sound-runtime/cleartake-sound.exe','release/win-unpacked/resources/sound-model']);
+node(['scripts/check-app-startup.cjs','release/win-unpacked/ClearTake.exe']);
 const archives=fs.readdirSync('release').filter(f=>/^ClearTake-Windows-.*-x64\.zip$/.test(f));if(!archives.length)throw Error('No Windows ZIP was produced.');
 (async()=>{for(const name of archives){const file=path.join('release',name),hash=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))hash.update(chunk);fs.writeFileSync(file+'.sha256',hash.digest('hex')+'  '+name+'\n');console.log('Built: '+path.resolve(file));}console.log('Development ZIP: not code-signed. Test native recording before publication.');})().catch(e=>{console.error(e);process.exitCode=1;});

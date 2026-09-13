@@ -1,7 +1,7 @@
 {
   "name": "cleartake-independent",
   "productName": "ClearTake",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A local screen recorder with reversible sound and video edits.",
   "author": "ClearTake contributors",
   "license": "MIT",

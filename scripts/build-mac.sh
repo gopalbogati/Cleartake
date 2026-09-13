@@ -36,6 +36,8 @@ TEST_FFMPEG="$(node -p 'require("ffmpeg-static")')" TEST_FFPROBE="$(node -p 'req
 node scripts/check-runtime.cjs .build/sound-dist/cleartake-sound/cleartake-sound .build/yamnet
 CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:mac
 node scripts/check-runtime.cjs release/mac-arm64/ClearTake.app/Contents/Resources/sound-runtime/cleartake-sound release/mac-arm64/ClearTake.app/Contents/Resources/sound-model
+codesign --verify --deep --strict --verbose=2 release/mac-arm64/ClearTake.app
+node scripts/check-app-startup.cjs release/mac-arm64/ClearTake.app/Contents/MacOS/ClearTake
 for dmg in release/ClearTake-Mac-*-arm64.dmg; do
   hdiutil verify "$dmg"
   shasum -a 256 "$dmg" > "$dmg.sha256"
