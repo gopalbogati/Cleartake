@@ -1,5 +1,9 @@
 name: Build Mac and Windows downloads
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/desktop-downloads.yml
   workflow_dispatch:
     inputs:
       prepare_draft:
