@@ -34,7 +34,7 @@ Original media is retained. Edits live in a project file until you render/export
 
 A Vercel-ready download website is included. Import this repository into Vercel with the root directory set to `./` or `engine`; both include a `vercel.json` that configures the static website build. It displays only app ZIPs that exist in published GitHub releases.
 
-Run **Actions → Build Mac and Windows downloads** to build both platforms and prepare a draft prerelease. Test the packages, review the draft, then publish it to activate the website's download buttons. See [website deployment and release instructions](docs/DOWNLOAD-WEBSITE.md).
+Run **Actions → Build Mac and Windows downloads** to build both platforms. With **Publish downloads** enabled, successful builds publish a development preview and activate the website download buttons. See [website deployment and release instructions](docs/DOWNLOAD-WEBSITE.md).
 
 On Windows with Node 22+ x64 and Python 3.12 installed, run `Build-Windows.cmd` to create a local Windows ZIP. Extract the full ZIP before opening ClearTake.exe.
 

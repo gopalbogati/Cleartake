@@ -19,8 +19,8 @@ Do not use the desktop `npm run build` command as the website build. The website
 1. Open the repository's **Actions** tab.
 2. Select **Build Mac and Windows downloads → Run workflow** on `main`.
 3. Wait for both platform jobs to succeed. Each job packages the app and tests the bundled local sound detector. Download the corresponding workflow artifacts if you want to test before publication.
-4. When **Prepare a draft release** is selected, the workflow collects both builds into a GitHub draft prerelease. Open **Releases**, inspect the notes/assets and test the apps before publishing the draft.
-5. Publish that release when it is ready. The website checks public releases whenever visitors open it; no Vercel redeployment is needed for new app downloads.
+4. With **Publish downloads** enabled, the workflow publishes both checked builds and matching media-tool source archives as a development preview. Disable that option for artifact-only test builds.
+5. The website checks public releases whenever visitors open it; no Vercel redeployment is needed for new app downloads. Changes to the release workflow or its native build scripts also trigger a build on `main`.
 
 Output app filenames:
 
@@ -39,7 +39,7 @@ Use a tag matching the app version, e.g. `v0.1.0`. Future versions must update `
 - Windows: x64 Intel/AMD; ZIP containing ClearTake.exe and required companion files. Extract the complete folder before running it.
 - Intel Mac and Windows ARM64 are not included.
 
-Windows packaging and helper paths are implemented, but this development environment is Linux: it cannot verify native Windows/macOS capture or installability. A completed build is not a native recording test. The draft release notes retain that distinction. These development packages are not Windows code-signed or Apple-notarized.
+Windows packaging and helper paths are implemented, but this development environment is Linux: it cannot verify native Windows/macOS capture or installability. A completed build is not a native recording test. The release notes retain that distinction. These development packages are not Windows code-signed or Apple-notarized.
 
 Keep the third-party notices in the packages and satisfy the exact media-binary corresponding-source obligations documented in THIRD-PARTY.md before public binary distribution. Do not attach personal recordings to releases.
 

@@ -1,6 +1,9 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
 const prefix=path.resolve('.build/media/prefix/bin'),ext=process.platform==='win32'?'.exe':'';
+for(const name of ['ffmpeg','ffprobe'])if(!fs.existsSync(path.join(prefix,name+ext)))throw Error('Missing source-built '+name);
+// Remove other-platform executables shipped by the npm wrapper.
+fs.rmSync(path.join(path.dirname(require.resolve('ffprobe-static/package.json')),'bin'),{recursive:true,force:true});
 for(const [name,dest] of [['ffmpeg',require('ffmpeg-static')],['ffprobe',require('ffprobe-static').path]]){
  const source=path.join(prefix,name+ext);
  if(!fs.existsSync(source))throw Error('Missing source-built '+name+'. Run scripts/build-media.sh first.');
