@@ -20,13 +20,9 @@ jobs:
         include:
           - name: Mac Apple Silicon
             os: macos-14
-            command: bash scripts/build-mac.sh
-            shell: bash
             artifact: ClearTake-Mac-arm64
           - name: Windows x64
             os: windows-2022
-            command: node scripts/build-windows.cjs
-            shell: pwsh
             artifact: ClearTake-Windows-x64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
@@ -39,9 +35,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build and check bundled detector
-        shell: ${{ matrix.shell }}
-        run: ${{ matrix.command }}
+      - name: Build Mac and check bundled detector
+        if: runner.os == 'macOS'
+        shell: bash
+        run: bash scripts/build-mac.sh
+      - name: Build Windows and check bundled detector
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: node scripts/build-windows.cjs
       - name: Add build identity
         shell: bash
         run: |
