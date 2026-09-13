@@ -1,0 +1,101 @@
+{
+  "name": "cleartake-independent",
+  "productName": "ClearTake",
+  "version": "0.1.0",
+  "description": "A local screen recorder with reversible sound and video edits.",
+  "author": "ClearTake contributors",
+  "license": "MIT",
+  "main": "app/main.cjs",
+  "scripts": {
+    "build": "esbuild app/ui/editor.js --bundle --format=iife --outfile=app/ui/bundle.js",
+    "start": "npm run build && electron .",
+    "test": "node --test tests/*.test.cjs",
+    "dist:mac": "npm run build && electron-builder --mac dmg --arm64 --publish never"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "ffmpeg-static": "5.3.0",
+    "ffprobe-static": "3.1.0"
+  },
+  "devDependencies": {
+    "electron": "43.1.0",
+    "electron-builder": "26.7.0",
+    "esbuild": "0.25.12",
+    "jsdom": "26.1.0"
+  },
+  "build": {
+    "appId": "app.cleartake.independent",
+    "productName": "ClearTake",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "app/**",
+      "engine/*.cjs",
+      "assets/icons/**",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/ffprobe-static/**",
+      "node_modules/@resvg/**"
+    ],
+    "extraResources": [
+      {
+        "from": ".build/sound-dist/cleartake-sound",
+        "to": "sound-runtime"
+      },
+      {
+        "from": ".build/yamnet",
+        "to": "sound-model"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE"
+      },
+      {
+        "from": "THIRD-PARTY.md",
+        "to": "THIRD-PARTY.md"
+      },
+      {
+        "from": ".build/notices",
+        "to": "ThirdPartyNotices"
+      }
+    ],
+    "publish": [],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icons/app.icns",
+      "artifactName": "ClearTake-Independent-${version}-${arch}.${ext}",
+      "identity": "-",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "ClearTake records your voice when microphone recording is enabled.",
+        "NSCameraUsageDescription": "ClearTake records your camera when webcam recording is enabled.",
+        "NSAudioCaptureUsageDescription": "ClearTake records application audio when system audio is enabled."
+      },
+      "minimumSystemVersion": "14.2",
+      "hardenedRuntime": false
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 160
+        },
+        {
+          "x": 410,
+          "y": 160,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}

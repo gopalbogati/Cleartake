@@ -1,0 +1,21 @@
+CLEARTAKE — INDEPENDENT EDITOR
+
+BUILD
+1. Extract this ZIP into its own folder on your Apple Silicon Mac.
+2. In Terminal: brew install node@22 python@3.12
+3. Open Terminal in this folder: bash Build-Mac.command
+4. Open the DMG created in release. Drag ClearTake into Applications.
+
+REMOVE A SNEEZE
+1. Record, then Stop & edit.
+2. Click Listen beside a possible sneeze.
+3. Check the row and choose Mute sound (keeps picture) or Cut moment (removes both).
+4. For any missed sound, drag on the waveform, then Mute sound or Cut from video.
+5. Turn off Listen to original. Render preview, then Export MP4.
+
+The raw recording is preserved. Detection can miss sounds; review the export.
+For a visible sneeze, choose Cut from video.
+
+This ZIP is source code, not an already built DMG. Native Mac capture and the
+installer still need testing on your Mac. The build is not Apple-notarized.
+Read README.md for GitHub publication and THIRD-PARTY.md before sharing binaries.

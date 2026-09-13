@@ -1,0 +1,27 @@
+name: Build ClearTake DMG
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and validate DMG
+        run: bash scripts/build-mac.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClearTake-Apple-Silicon
+          path: |
+            release/*.dmg
+            release/*.sha256
+          if-no-files-found: error

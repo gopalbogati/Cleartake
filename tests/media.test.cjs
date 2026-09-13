@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto');
+const {execFileSync}=require('node:child_process');const {probe,run,exportVideo,waveform}=require('../engine/media.cjs');
+const ffmpeg=process.env.TEST_FFMPEG||'/usr/bin/ffmpeg',ffprobe=process.env.TEST_FFPROBE||'/usr/bin/ffprobe';
+function rms(file,at){const b=execFileSync(ffmpeg,['-v','error','-ss',String(at),'-i',file,'-t','0.2','-vn','-ac','1','-ar','8000','-f','f32le','pipe:1']);let n=0;for(let i=0;i<b.length;i+=4)n+=b.readFloatLE(i)**2;return Math.sqrt(n/(b.length/4));}
+test('real export preserves sources, mutes audio and removes time; preview can render twice',{skip:!require('node:fs').existsSync(ffmpeg),timeout:180000},async()=>{const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cleartake-test-'));try{
+const source=path.join(dir,'screen.mp4');await run(ffmpeg,['-v','error','-y','-f','lavfi','-i','testsrc2=size=320x180:rate=30:duration=6','-f','lavfi','-i','sine=frequency=440:duration=6','-c:v','libx264','-threads','2','-pix_fmt','yuv420p','-c:a','aac','-shortest',source]);
+const sha=()=>fs.readFile(source).then(b=>crypto.createHash('sha256').update(b).digest('hex')),before=await sha();const project={directory:dir,files:{screen:'screen.mp4'},duration:6,screenInfo:await probe(ffprobe,source)};
+const output=path.join(dir,'out.mp4'),edits={ranges:[{start:1,end:2,action:'mute'},{start:3,end:4,action:'cut'}],title:'Hello %{no expansion}',captions:[{start:4,end:5,text:'After the cut'}]};
+await exportVideo({project,edits,ffmpeg,ffprobe,output,draft:true});const info=await probe(ffprobe,output);assert.ok(Math.abs(info.duration-5)<.12,info.duration);assert.equal(info.width,1280);assert.ok(rms(output,1.3)<.001);assert.ok(rms(output,.3)>.02);assert.equal(await sha(),before);assert.equal((await waveform(ffmpeg,source,6)).length>0,true);
+await run(ffmpeg,['-v','error','-y','-f','lavfi','-i','color=red:size=160x120:rate=30:duration=6','-c:v','libx264','-threads','2',path.join(dir,'camera.mp4')]);project.files.camera='camera.mp4';
+await exportVideo({project,edits:{...edits,speed:2,aspect:'vertical'},ffmpeg,ffprobe,output,draft:true});const portrait=await probe(ffprobe,output);assert.equal(portrait.width,720);assert.equal(portrait.height,1280);assert.ok(Math.abs(portrait.duration-2.5)<.12,portrait.duration);
+}finally{await fs.rm(dir,{recursive:true,force:true});}});
