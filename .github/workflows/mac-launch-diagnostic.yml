@@ -9,23 +9,42 @@ permissions:
   contents: read
 jobs:
   launch:
-    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-26]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Download and verify published 0.1.0 ZIP
+      - name: Download and verify published 0.1.1 ZIP
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p diagnostic/release
-          gh release download v0.1.0 --pattern 'ClearTake-Mac-0.1.0-arm64.zip*' --dir diagnostic/release
+          gh release download v0.1.1 --pattern 'ClearTake-Mac-0.1.1-arm64.zip*' --dir diagnostic/release
           cd diagnostic
-          shasum -a 256 -c release/ClearTake-Mac-0.1.0-arm64.zip.sha256
-          unzip -q release/ClearTake-Mac-0.1.0-arm64.zip -d app
+          shasum -a 256 -c release/ClearTake-Mac-0.1.1-arm64.zip.sha256
+          unzip -q release/ClearTake-Mac-0.1.1-arm64.zip -d app
+      - name: Record operating system and distribution assessment
+        run: |
+          sw_vers
+          codesign -d --verbose=4 diagnostic/app/ClearTake.app
+          syspolicy_check distribution diagnostic/app/ClearTake.app > diagnostic/policy.txt 2>&1 || true
+          cat diagnostic/policy.txt
       - name: Check signature and first app launch
         run: |
           codesign --verify --deep --strict --verbose=2 diagnostic/app/ClearTake.app
           node scripts/check-app-startup.cjs diagnostic/app/ClearTake.app/Contents/MacOS/ClearTake
+      - name: Collect launch failure evidence
+        if: failure()
+        run: |
+          /usr/bin/log show --last 10m --style compact --predicate 'eventMessage CONTAINS[c] "ClearTake"' > diagnostic/system-log.txt 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-launch-${{ matrix.os }}
+          path: diagnostic/*.txt
