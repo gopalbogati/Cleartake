@@ -2,7 +2,11 @@
 
 # ClearTake
 
-A local screen recorder and editor for the moments you want to keep.
+**Version: 0.1.0 · Development preview**
+
+ClearTake is a local macOS screen recorder and editor with sneeze/cough detection, reversible audio muting, video cuts, captions and MP4 export.
+
+Source code is available. A downloadable DMG release has not been published.
 
 **Record → review sounds → mute or cut → export MP4.**
 
