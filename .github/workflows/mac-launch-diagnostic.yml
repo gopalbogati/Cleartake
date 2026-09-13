@@ -1,0 +1,31 @@
+name: Check published Mac app launch
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mac-launch-diagnostic.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  launch:
+    runs-on: macos-14
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download and verify published 0.1.0 ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p diagnostic/release
+          gh release download v0.1.0 --pattern 'ClearTake-Mac-0.1.0-arm64.zip*' --dir diagnostic/release
+          cd diagnostic
+          shasum -a 256 -c release/ClearTake-Mac-0.1.0-arm64.zip.sha256
+          unzip -q release/ClearTake-Mac-0.1.0-arm64.zip -d app
+      - name: Check signature and first app launch
+        run: |
+          codesign --verify --deep --strict --verbose=2 diagnostic/app/ClearTake.app
+          node scripts/check-app-startup.cjs diagnostic/app/ClearTake.app/Contents/MacOS/ClearTake
