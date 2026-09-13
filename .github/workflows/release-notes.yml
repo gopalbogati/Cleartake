@@ -1,0 +1,29 @@
+name: Sync current release notes
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/RELEASE-NOTES.md
+      - .github/workflows/release-notes.yml
+  workflow_run:
+    workflows: [Build Mac and Windows downloads]
+    types: [completed]
+permissions:
+  contents: write
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Update the matching release if published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(node -p 'require("./package.json").version')"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release edit "$tag" --notes-file docs/RELEASE-NOTES.md
+          else
+            echo 'Release not available yet; its completed build will trigger this sync again.'
+          fi

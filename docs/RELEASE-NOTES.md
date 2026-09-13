@@ -1,6 +1,6 @@
-## 0.1.1 startup fix
+## 0.1.1 startup checks
 
-Creates the settings directory before registering it with Electron, fixing a first-launch failure on computers without an existing ClearTake profile. Startup errors now show a diagnostic message instead of leaving the app without a window.
+Creates the settings directory explicitly before registering it with Electron. Startup errors now show a diagnostic message instead of leaving the app without a window. The reported launch failure on the user's Mac has not yet been reproduced: the published 0.1.0 ZIP passed signature verification and launched successfully on a clean macOS runner.
 
 This release adds a packaged-app launch check on Mac and Windows. It verifies that the home window loads and that the preload bridge can list projects. Mac code signatures are also checked before publishing. These checks do not replace live recording tests or Apple notarization.
 
