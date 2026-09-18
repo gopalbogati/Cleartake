@@ -10,6 +10,16 @@ Source code is available. Downloadable app packages are published separately in 
 
 **Record → review sounds → mute or cut → export MP4.**
 
+## See it work
+
+![ClearTake — record, find the sneeze, mute or cut it, export](docs/media/cleartake-promo.gif)
+
+*Record naturally. Something interrupts you. Keep going — when you stop, a sound
+model running on your own machine finds the sneezes, the coughs and the throat
+clearing, and you mute or cut each one. Untick it and the moment comes back.*
+
+[**Watch the 54-second version with sound →**](docs/media/cleartake-promo.mp4?raw=1)
+
 ClearTake 0.1 is a new, independently written implementation with a new interface. This directory contains no source code, interface assets or project structure copied from Recordly. It uses the third-party libraries listed in [THIRD-PARTY.md](THIRD-PARTY.md). The previous fork is a separate project and its project files are not compatible; import an exported video to edit it here.
 
 ## What you can do
