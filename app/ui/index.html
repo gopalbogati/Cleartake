@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob: ctmedia:; connect-src 'self' ctmedia:; object-src 'none'; base-uri 'none'">
-<title>ClearTake</title><link rel="stylesheet" href="styles.css"></head>
+<title>ClearTake</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="motion.css"></head>
 <body>
 <aside class="rail"><img src="logo.png" alt="ClearTake" class="logo"><span class="rail-name">Clear<br>Take</span>
 <button id="home-nav" class="rail-link active" title="Record and recordings"><span>◉</span>Record</button>
@@ -17,6 +17,7 @@
 <div class="capture-options"><label class="toggle"><input type="checkbox" id="use-mic" checked><span>Microphone<small>Your voice</small></span></label><label class="toggle"><input type="checkbox" id="use-system"><span>Computer audio<small>Where supported</small></span></label><label class="toggle"><input type="checkbox" id="use-camera"><span>Webcam<small>A small camera window</small></span></label></div>
 <label class="field compact">Microphone<select id="mic-device"><option value="">Default microphone</option></select></label>
 <label class="checkline"><input id="auto-scan" type="checkbox" checked>Find possible sneezes and coughs after recording</label>
+<label class="checkline"><input id="track-cursor" type="checkbox" checked>Track pointer for zoom suggestions (whole displays, first 60 minutes)</label>
 <div class="start-actions"><button id="record" class="primary large">● Start recording</button><button id="import-video" class="secondary large">Import a video</button></div>
 <small class="muted">Your recording stays on this computer. Review suggested edits before sharing.</small></div>
 <div class="explain-card"><div class="sample-window"><div class="window-top"><i></i><i></i><i></i><span>A clearer story</span></div><div class="sample-inside"><img src="logo.png" alt=""><div class="sample-lines"><b></b><i></i><i></i></div><div class="sample-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="sample-label">Keep the good parts.</span></div></div>
@@ -32,6 +33,7 @@
 <div class="timeline-title"><b>Select a moment</b><span>Drag across the waveform, or enter times below.</span></div><canvas id="timeline" width="1200" height="100" aria-label="Recording waveform; drag to select a time range"></canvas>
 <div class="selection-tools"><label>From<input id="range-start" type="number" min="0" step="0.1" value="0"></label><label>To<input id="range-end" type="number" min="0" step="0.1" value="2"></label><button id="use-playhead" class="secondary">Start here</button><button id="mute-range" class="secondary">Mute sound</button><button id="cut-range" class="danger">Cut from video</button></div>
 <p class="hint"><b>Mute</b> keeps the picture and makes the selected sound quiet. <b>Cut</b> removes that moment from picture and sound.</p>
+<section class="motion-panel" aria-label="Subject zooms"><div class="section-heading"><h3>Focus & smooth zoom</h3><button id="zoom-suggest" class="secondary">Suggest zooms</button></div><div class="selection-tools"><button id="zoom-add" class="secondary">Zoom selected moment</button><button id="zoom-pick" class="secondary" disabled>Point to subject</button></div><p id="zoom-note" class="hint"></p><div id="zoom-list"></div></section>
 <div class="section-heading"><h3>Sound review & edits <span id="edit-count" class="count">0</span></h3><button id="scan" class="secondary">Find unwanted sounds</button></div>
 <p id="scan-note" class="hint">Automatic detection can miss sounds or flag speech. You can always select a moment manually.</p><div id="edit-list"></div></div>
 <aside class="settings"><div class="settings-label">FINISH YOUR TAKE</div>

@@ -18,6 +18,16 @@ if [[ -f .build/media/prefix/bin/ffmpeg ]]; then
 else
   node node_modules/ffmpeg-static/install.js
 fi
+# Some npm ffprobe packages label an Intel Mach-O as arm64. Never ship that
+# binary silently; use the existing reproducible native-media build when needed.
+if ! node -e 'require("./engine/media-tools.cjs").mediaTools({packaged:true})'; then
+  if ! command -v pkg-config >/dev/null; then
+    echo 'Native FFmpeg/FFprobe need pkg-config. Install it with: brew install pkg-config'; exit 1
+  fi
+  bash scripts/build-media.sh
+  node scripts/install-built-media.cjs
+  node -e 'require("./engine/media-tools.cjs").mediaTools({packaged:true})'
+fi
 node node_modules/electron/install.js
 npm run build
 python3.12 -m venv .build/venv

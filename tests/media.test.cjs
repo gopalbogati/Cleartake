@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto');
 const {execFileSync}=require('node:child_process');const {probe,run,exportVideo,waveform}=require('../engine/media.cjs');
-const ffmpeg=process.env.TEST_FFMPEG||'/usr/bin/ffmpeg',ffprobe=process.env.TEST_FFPROBE||'/usr/bin/ffprobe';
+const tools=require('../engine/media-tools.cjs').mediaTools();
+const ffmpeg=process.env.TEST_FFMPEG||tools.ffmpeg,ffprobe=process.env.TEST_FFPROBE||tools.ffprobe;
 function rms(file,at){const b=execFileSync(ffmpeg,['-v','error','-ss',String(at),'-i',file,'-t','0.2','-vn','-ac','1','-ar','8000','-f','f32le','pipe:1']);let n=0;for(let i=0;i<b.length;i+=4)n+=b.readFloatLE(i)**2;return Math.sqrt(n/(b.length/4));}
 test('real export preserves sources, mutes audio and removes time; preview can render twice',{skip:!require('node:fs').existsSync(ffmpeg),timeout:180000},async()=>{const dir=await fs.mkdtemp(path.join(os.tmpdir(),'cleartake-test-'));try{
 const source=path.join(dir,'screen.mp4');await run(ffmpeg,['-v','error','-y','-f','lavfi','-i','testsrc2=size=320x180:rate=30:duration=6','-f','lavfi','-i','sine=frequency=440:duration=6','-c:v','libx264','-threads','2','-pix_fmt','yuv420p','-c:a','aac','-shortest',source]);

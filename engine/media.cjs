@@ -4,7 +4,18 @@ const {promisify}=require('node:util');
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const {cleanEdits,keptSegments,mappedCaptions}=require('./edit-plan.cjs');
+const {zoomFilter}=require('./motion.cjs');
 const execute=promisify(execFile);
+const graphOptions=new Map();
+async function graphOption(binary){
+  if(!graphOptions.has(binary)){
+    const {stdout}=await execute(binary,['-version'],{timeout:10000});
+    const major=Number(stdout.match(/ffmpeg version (?:n)?(\d+)/)?.[1]);
+    // FFmpeg 7 introduced file-valued options; FFmpeg 9 removed the old spelling.
+    graphOptions.set(binary,major>=7?'-/filter_complex':'-filter_complex_script');
+  }
+  return graphOptions.get(binary);
+}
 
 async function probe(binary,file){
   const {stdout}=await execute(binary,['-v','error','-show_streams','-show_format','-of','json',file],{maxBuffer:2e6,timeout:30000});
@@ -73,7 +84,13 @@ async function exportVideo({project,edits:raw,ffmpeg,ffprobe,output,signal,onPro
     for(let i=0;i<segments.length;i++){
       const {start,end}=segments[i],length=(end-start)/edits.speed;
       let video=`v${i}`;
-      graph.push(`[0:v]trim=start=${start}:end=${end},setpts=(PTS-STARTPTS)/${edits.speed},crop=w=trunc(iw/${edits.zoom}/2)*2:h=trunc(ih/${edits.zoom}/2)*2:x=(iw-ow)/2:y=(ih-oh)/2,scale=${boxW}:${boxH}:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${edits.background},setsar=1,fps=30,format=yuv420p[v${i}]`);
+      const ratio=project.screenInfo.width/project.screenInfo.height;
+      const frameW=Math.max(2,Math.floor(Math.min(boxW,boxH*ratio)/2)*2),frameH=Math.max(2,Math.floor(Math.min(boxH,boxW/ratio)/2)*2);
+      const moving=edits.zoomRegions.some(r=>r.enabled&&r.end>start&&r.start<end);
+      // zoompan rounds its crop to input pixels. Oversampling before the crop
+      // prevents visible stepping when low-resolution recordings zoom and pan.
+      const framing=moving?`scale=${frameW*2}:${frameH*2}:flags=bicubic,${zoomFilter(edits,{start,end},frameW,frameH)}`:`crop=w=trunc(iw/${edits.zoom}/2)*2:h=trunc(ih/${edits.zoom}/2)*2:x=(iw-ow)/2:y=(ih-oh)/2,scale=${frameW}:${frameH}`;
+      graph.push(`[0:v]trim=start=${start}:end=${end},setpts=(PTS-STARTPTS)/${edits.speed},fps=30,${framing},pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${edits.background},setsar=1,format=yuv420p[v${i}]`);
       if(camera!==null){
         const size=Math.floor(Math.min(W,H)*edits.cameraSize/2)*2,margin=Math.max(16,Math.round(Math.min(W,H)*.03));
         const x=edits.cameraCorner.endsWith('r')?`W-w-${margin}`:margin,y=edits.cameraCorner.startsWith('b')?`H-h-${margin}`:margin;
@@ -106,7 +123,7 @@ async function exportVideo({project,edits:raw,ffmpeg,ffprobe,output,signal,onPro
     }
     const filterfile=path.join(work,'graph.txt');await fs.writeFile(filterfile,graph.join(';\n'));
     const temporary=path.join(work,'finished.mp4');
-    await run(ffmpeg,['-hide_banner','-loglevel','error','-nostdin','-y',...input,'-filter_complex_script',filterfile,
+    await run(ffmpeg,['-hide_banner','-loglevel','error','-nostdin','-y',...input,await graphOption(ffmpeg),filterfile,
       '-map',`[${final}]`,'-map','[audio]','-c:v','libx264','-preset',draft?'ultrafast':'fast','-crf',draft?'25':'20',
       '-t',String(duration),'-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-movflags','+faststart','-progress','pipe:1',temporary],{signal,onProgress,duration});
     const metadata=await probe(ffprobe,temporary);if(!metadata.hasVideo||metadata.duration<.03)throw new Error('Export produced no usable video.');

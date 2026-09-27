@@ -1,19 +1,25 @@
 'use strict';
-const {app,BrowserWindow,ipcMain,desktopCapturer,session,dialog,protocol,shell}=require('electron');
+const {app,BrowserWindow,ipcMain,desktopCapturer,session,dialog,protocol,shell,screen}=require('electron');
 const fs=require('node:fs/promises');const syncFs=require('node:fs');const path=require('node:path');
 const {Readable}=require('node:stream');const {spawn}=require('node:child_process');
 const {Projects}=require('../engine/projects.cjs');
 const {probe,run,exportVideo,waveform}=require('../engine/media.cjs');
 const {cleanEdits,parseSrt}=require('../engine/edit-plan.cjs');
+const {CursorCapture}=require('../engine/cursor-capture.cjs');
+const {cleanCursorSamples}=require('../engine/motion.cjs');
+const {mediaTools}=require('../engine/media-tools.cjs');
 protocol.registerSchemesAsPrivileged([{scheme:'ctmedia',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
 app.setName('ClearTake');
-const settingsDirectory=path.join(app.getPath('appData'),'ClearTake Independent');
+// Development smoke tests get isolated preferences and generated media only.
+const smokeRoot=!app.isPackaged&&process.env.CLEARTAKE_SMOKE_ROOT?path.resolve(process.env.CLEARTAKE_SMOKE_ROOT):null;
+const settingsDirectory=smokeRoot?path.join(smokeRoot,'settings'):path.join(app.getPath('appData'),'ClearTake Independent');
 syncFs.mkdirSync(settingsDirectory,{recursive:true});
 app.setPath('userData',settingsDirectory);
 let window,projects,choice,job=null,recordingId=null;
-const unpack=p=>app.isPackaged?p.replace(/app\.asar([/\\])/,'app.asar.unpacked$1'):p;
-const ffmpeg=()=>unpack(require('ffmpeg-static'));
-const ffprobe=()=>unpack(require('ffprobe-static').path);
+let cursorCapture=null,cursorTimer=null;
+function stopCursor(){clearInterval(cursorTimer);cursorTimer=null;const samples=cursorCapture?.stop()??[];cursorCapture=null;return samples;}
+const ffmpeg=()=>mediaTools({packaged:app.isPackaged,root:app.getAppPath()}).ffmpeg;
+const ffprobe=()=>mediaTools({packaged:app.isPackaged,root:app.getAppPath()}).ffprobe;
 const publicProject=p=>projects.summary(p);
 const tell=(message,progress)=>{if(window&&!window.isDestroyed())window.webContents.send('job:update',{message,progress});};
 
@@ -51,7 +57,7 @@ async function analyze(id){
 }
 
 app.whenReady().then(async()=>{
-  projects=new Projects(path.join(app.getPath('videos'),'ClearTake Projects'));
+  projects=new Projects(smokeRoot?path.join(smokeRoot,'projects'):path.join(app.getPath('videos'),'ClearTake Projects'));
   protocol.handle('ctmedia',async request=>{
     try{
       const url=new URL(request.url),[id,key]=url.pathname.split('/').filter(Boolean),p=projects.get(id),filename=p.files[key];
@@ -78,15 +84,24 @@ app.whenReady().then(async()=>{
     }catch{callback({});}
   });
   handler('sources',async()=>{const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:320,height:200}});return list.map(s=>({id:s.id,name:s.name,image:s.thumbnail.toDataURL()}));});
-  handler('choose-source',async(id,system)=>{const list=await desktopCapturer.getSources({types:['screen','window']});if(!list.some(s=>s.id===id))throw new Error('Choose your screen again.');choice={id,system:system===true};return true;});
+  handler('choose-source',async(id,system)=>{const list=await desktopCapturer.getSources({types:['screen','window']});const selected=list.find(s=>s.id===id);if(!selected)throw new Error('Choose your screen again.');choice={id,displayId:selected.display_id,system:system===true};return true;});
   handler('record:begin',async name=>{if(recordingId)throw new Error('A recording is already active.');const p=await projects.create(name);recordingId=p.id;return publicProject(p);});
+  handler('record:cursor-start',async(id,enabled)=>{
+    if(id!==recordingId)throw new Error('No active recording.');stopCursor();
+    if(!enabled||!choice?.id.startsWith('screen:'))return false;
+    const display=screen.getAllDisplays().find(d=>String(d.id)===choice.displayId);
+    if(!display)return false;
+    cursorCapture=new CursorCapture({bounds:display.bounds,point:()=>screen.getCursorScreenPoint()});
+    cursorCapture.start();cursorTimer=setInterval(()=>cursorCapture?.sample(),100);return true;
+  });
+  handler('record:pause',async(id,paused)=>{if(id!==recordingId)throw new Error('No active recording.');cursorCapture?.setPaused(paused===true);return true;});
   handler('record:chunk',async(id,track,data)=>{
     if(id!==recordingId||!['screen','mic','camera'].includes(track))throw new Error('Invalid recording destination.');
     const p=projects.get(id),buffer=Buffer.from(data);if(buffer.length>32*1024*1024)throw new Error('Recording chunk is too large.');
     const filename=`${track}-original.webm`;await fs.appendFile(path.join(p.directory,filename),buffer);const first=!p.files[track];p.files[track]=filename;if(first)await projects.save(p);return true;
   });
   handler('record:finish',async id=>{
-    if(id!==recordingId)throw new Error('No active recording.');recordingId=null;const p=projects.get(id);
+    if(id!==recordingId)throw new Error('No active recording.');recordingId=null;const p=projects.get(id);p.cursorSamples=stopCursor();
     return exclusive('Preparing your recording…',async signal=>{
       for(const track of ['screen','mic','camera']){if(!p.files[track])continue;
         const output=`${track}.webm`;await run(ffmpeg(),['-v','error','-nostdin','-y','-fflags','+genpts','-i',path.join(p.directory,p.files[track]),'-map','0','-c','copy',path.join(p.directory,output)],{signal});p.files[track]=output;
@@ -94,10 +109,11 @@ app.whenReady().then(async()=>{
       if(!p.files.screen)throw new Error('No screen video was captured.');
       p.screenInfo=await probe(ffprobe(),path.join(p.directory,p.files.screen));p.duration=p.screenInfo.duration;
       if(p.duration<=0)throw new Error('The recording has no readable duration.');
+      p.cursorSamples=cleanCursorSamples(p.cursorSamples,p.duration);
       p.state='ready';p.edits=cleanEdits({},p.duration);await projects.save(p);return publicProject(p);
     });
   });
-  handler('record:abandon',async id=>{if(recordingId===id)recordingId=null;const p=projects.get(id);p.state='incomplete';await projects.save(p);return true;});
+  handler('record:abandon',async id=>{if(recordingId===id){recordingId=null;stopCursor();}const p=projects.get(id);p.state='incomplete';await projects.save(p);return true;});
   handler('projects:list',()=>projects.list());
   handler('projects:get',id=>publicProject(projects.get(id)));
   handler('project:open',async()=>{const result=await dialog.showOpenDialog(window,{title:'Open a ClearTake project',filters:[{name:'ClearTake project',extensions:['json']}],properties:['openFile']});
@@ -136,3 +152,4 @@ app.whenReady().then(async()=>{
   app.quit();
 });
 app.on('window-all-closed',()=>app.quit());
+app.on('will-quit',stopCursor);

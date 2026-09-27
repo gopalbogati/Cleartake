@@ -1,4 +1,5 @@
 'use strict';
+const {cleanZoomRegions} = require('./motion.cjs');
 
 const number = (v, min, max, fallback) => Number.isFinite(Number(v)) ? Math.min(max, Math.max(min, Number(v))) : fallback;
 
@@ -16,7 +17,7 @@ function cleanEdits(input, duration) {
     start: number(c.start, 0, duration, 0), end: number(c.end, 0, duration, 0),
     text: String(c.text ?? '').replace(/<[^>]*>/g, '').slice(0, 250),
   })).filter(c => c.end > c.start && c.text);
-  return {start, end, ranges, captions,
+  return {start, end, ranges, captions, zoomRegions: cleanZoomRegions(e.zoomRegions, duration),
     speed: [.5, .75, 1, 1.25, 1.5, 2].includes(Number(e.speed)) ? Number(e.speed) : 1,
     voiceVolume: number(e.voiceVolume, 0, 2, 1), systemVolume: number(e.systemVolume, 0, 2, 1),
     noise: e.noise !== false, aspect: ['wide','vertical','square'].includes(e.aspect) ? e.aspect : 'wide',

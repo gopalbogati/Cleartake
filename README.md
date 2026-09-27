@@ -34,11 +34,27 @@ ClearTake 0.1 is a new, independently written implementation with a new interfac
 - Mute microphone only, or all audio. Separate microphone and computer volume controls.
 - Trim the beginning/end, change speed, and apply gentle microphone noise reduction on export.
 - Choose landscape, portrait or square framing, a background color, padding and center zoom.
+- Add subject-focused zoom regions with smooth entry/exit, adjustable timing and strength, and click-to-position focus.
+- Track the pointer in whole-display recordings and generate editable zoom suggestions from pointer pauses.
 - Move and resize the webcam overlay.
 - Add an opening title; import SRT captions timed to the original video. Captions follow cuts and speed changes.
 - Undo/redo edits, reopen saved projects, listen to the original, render a preview and export MP4.
 
 Original media is retained. Edits live in a project file until you render/export. There are no accounts, subscriptions, API keys, analytics or recording uploads.
+
+## Focus on a subject with smooth zoom
+
+1. Select a moment by dragging the waveform or entering **From / To** times.
+2. Click **Zoom selected moment** in **Focus & smooth zoom**.
+3. Click **Point to subject**, then click the subject in the full source picture. ClearTake previews that focus.
+4. Adjust **Zoom ×** (up to 3×), **Ease (s)**, and the region's start/end times. The green strip on the waveform marks each zoom. Use the region checkbox or **Remove** to disable or delete it; undo/redo is supported.
+5. Play the edit or render a preview. Export uses the same focus coordinates and easing, including after cuts and playback-speed changes.
+
+For suggestions, enable **Track pointer for zoom suggestions** before recording a whole display. In the editor, click **Suggest zooms**. It finds pointer pauses, not faces or semantic objects; review the results. Repeating this action refreshes suggestions while retaining manual regions. Pointer tracking stops while recording is paused, ignores other displays, and is limited to the first 60 minutes. Positions are stored only in the local project JSON.
+
+Imported videos, older projects, and single-window recordings do not have a usable pointer track; manual subject zoom still works. The actual OS cursor remains part of the video. Cursor replacement, blur, bounce and continuous cursor-follow panning are not implemented. Zoom regions do not overlap and currently return to the base framing between subjects.
+
+See the [Recordly feature comparison](docs/RECORDLY-PARITY.md) for the full coverage checklist and remaining gaps. This update does not claim complete Recordly parity.
 
 ## Download website and Windows/Mac ZIPs
 
@@ -56,7 +72,7 @@ On Windows with Node 22+ x64 and Python 3.12 installed, run `Build-Windows.cmd` 
 2. If needed, install [Homebrew](https://brew.sh), then run:
 
    ```sh
-   brew install node@22 python@3.12
+   brew install node@22 python@3.12 pkg-config
    ```
 
 3. Open Terminal in this folder and run:
@@ -71,7 +87,7 @@ The script installs dependencies, downloads the local sound model, bundles the P
 release/ClearTake-Mac-0.1.0-arm64.dmg
 ```
 
-The first build downloads several large dependencies and needs several GB of free disk space. CMake and Swift build tools are not needed by this implementation. No model/API credentials are needed. Subsequent app recording and sound analysis run locally.
+The first build downloads several large dependencies and needs several GB of free disk space. The script checks native media-tool architecture; if an npm-provided binary is incompatible, it builds FFmpeg/FFprobe from source with Xcode command-line tools and pkg-config. No model/API credentials are needed. Subsequent app recording and sound analysis run locally.
 
 Open the DMG and drag **ClearTake** into Applications. It has a new application ID. Replacing a previous application with the same display name does not delete its recordings; keep those recordings backed up. macOS will ask for Screen Recording, Microphone and Camera permissions as applicable. If macOS blocks your own unsigned development build, use **System Settings → Privacy & Security → Open Anyway**, then reopen it. Do not disable Gatekeeper globally.
 
@@ -128,14 +144,17 @@ npm ci
 npm start
 npm test
 python3 tests/sound_test.py
+npm run test:window
 ```
 
-Detection in development requires `.build/venv` and `.build/yamnet`, created by the Mac build script. Recording/manual editing can run without that detector; the UI explains when it is missing. Set `TEST_FFMPEG` and `TEST_FFPROBE` if the binaries are not in `/usr/bin`. The Mac build script sets them automatically and tests the bundled detector before and after packaging.
+Detection in development requires `.build/venv` and `.build/yamnet`, created by the Mac build script. Recording/manual editing can run without that detector; the UI explains when it is missing. Media tests use the bundled tools, with native source-built/Homebrew fallbacks for development; `TEST_FFMPEG` and `TEST_FFPROBE` can override them. The Mac build script validates the bundled binaries before packaging. FFmpeg 6 and 9 export paths are tested.
+
+`npm test` rebuilds the UI before testing. `npm run test:window` opens an actual Electron window, exercises generated media, subject zoom, project save, and rendered preview, then closes it. It uses isolated temporary preferences/projects and saves a screenshot to `.build/motion-window.png`; it does not load or alter your recordings. A working graphical desktop is required. This does not replace permission/device testing for live screen, microphone, or webcam capture.
 
 The app's main-process entry is `app/main.cjs`. Its isolated UI is under `app/ui`. Editing, export, projects and detection are separate small modules under `engine`. There is no hidden dependency on a previous app's source tree.
 
 ## First-release boundaries
 
-This is a working source implementation, not a claim of complete feature parity with professional editors. It does not yet include multitrack clip rearrangement, transitions, automatic cursor zoom, zoom keyframes, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins or cloud sharing. Caption import is supported; automatic caption generation is not. Build targets are Apple Silicon Mac and Windows x64; native installation and recording still need validation on each platform. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
+This is a working source implementation, not a claim of complete feature parity with professional editors. It does not yet include multitrack clip rearrangement, clip transitions, continuous cursor-follow panning, cursor-overlay effects, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins or cloud sharing. Subject zoom regions and pointer-dwell suggestions are supported; freeform animation keyframes are not. Caption import is supported; automatic caption generation is not. Build targets are Apple Silicon Mac and Windows x64; native installation and live recording still need validation on each platform. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
 
 Application code: [MIT](LICENSE). Bundled third-party components retain their own licenses.

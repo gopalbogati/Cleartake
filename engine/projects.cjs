@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs/promises');const path=require('node:path');const {randomUUID}=require('node:crypto');
 const {cleanEdits}=require('./edit-plan.cjs');
+const {cleanCursorSamples}=require('./motion.cjs');
 
 class Projects{
   constructor(root){this.root=root;this.opened=new Map();this.writes=new Map();}
@@ -24,7 +25,7 @@ class Projects{
       if(!['screen','mic','camera','preview'].includes(key)||typeof name!=='string'||path.basename(name)!==name)throw new Error('Invalid project media path.');
     }
     if(typeof raw.id!=='string'||!/^[a-f0-9-]{36}$/.test(raw.id))throw new Error('Invalid project ID.');
-    const project={...raw,directory,edits:cleanEdits(raw.edits,raw.duration)};this.opened.set(project.id,project);return project;
+    const project={...raw,directory,cursorSamples:cleanCursorSamples(raw.cursorSamples,raw.duration),edits:cleanEdits(raw.edits,raw.duration)};this.opened.set(project.id,project);return project;
   }
   async list(){
     await fs.mkdir(this.root,{recursive:true});const rows=[];
@@ -34,7 +35,7 @@ class Projects{
     }
     return rows.sort((a,b)=>b.created.localeCompare(a.created)).slice(0,100);
   }
-  summary(p){return {id:p.id,name:p.name,created:p.created,duration:p.duration,state:p.state,files:Object.keys(p.files),edits:p.edits,screenInfo:p.screenInfo,scan:p.scan??[],
+  summary(p){return {id:p.id,name:p.name,created:p.created,duration:p.duration,state:p.state,files:Object.keys(p.files),edits:p.edits,screenInfo:p.screenInfo,scan:p.scan??[],cursorSamples:cleanCursorSamples(p.cursorSamples,p.duration),
     urls:Object.fromEntries(Object.keys(p.files).map(key=>[key,`ctmedia://asset/${p.id}/${key}`]))};}
 }
 module.exports={Projects};

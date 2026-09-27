@@ -1,0 +1,9 @@
+.motion-panel { margin: 22px 0; padding: 0 16px 16px; border: 1px solid #c5dcd1; border-radius: 12px; background: #f6fbf8; }
+.motion-panel .section-heading { margin-top: 16px; }
+.zoom-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 10px; padding: 12px; background: #fff; border: 1px solid #d8e4dc; border-radius: 8px; }
+.zoom-row.selected { border-color: #167b6b; box-shadow: 0 0 0 1px #167b6b; }
+.zoom-row label { display: grid; gap: 4px; font-size: 10px; color: #49625f; }
+.zoom-row input[type=number] { width: 69px; padding: 6px; border: 1px solid #c5dcd1; border-radius: 4px; }
+.zoom-row button { font-size: 11px; }
+#screen-frame.picking-focus { cursor: crosshair; outline: 3px solid #39d9b3; outline-offset: -3px; }
+.busy .motion-panel { pointer-events: none; }
