@@ -9,10 +9,10 @@ const execute=promisify(execFile);
 const graphOptions=new Map();
 async function graphOption(binary){
   if(!graphOptions.has(binary)){
-    const {stdout}=await execute(binary,['-version'],{timeout:10000});
-    const major=Number(stdout.match(/ffmpeg version (?:n)?(\d+)/)?.[1]);
-    // FFmpeg 7 introduced file-valued options; FFmpeg 9 removed the old spelling.
-    graphOptions.set(binary,major>=7?'-/filter_complex':'-filter_complex_script');
+    const {stdout}=await execute(binary,['-hide_banner','-h','full'],{timeout:10000,maxBuffer:4e6});
+    // Source builds can report a parent repository's Git hash as their version.
+    // Inspect supported options instead; FFmpeg 9 removed the old spelling.
+    graphOptions.set(binary,/^-filter_complex_script\s/m.test(stdout)?'-filter_complex_script':'-/filter_complex');
   }
   return graphOptions.get(binary);
 }
