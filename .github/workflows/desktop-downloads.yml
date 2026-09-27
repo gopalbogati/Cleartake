@@ -10,7 +10,10 @@ on:
       - scripts/install-built-media.cjs
       - scripts/check-app-startup.cjs
       - app/**
+      - engine/**
+      - tests/**
       - package.json
+      - package-lock.json
   workflow_dispatch:
     inputs:
       publish_downloads:

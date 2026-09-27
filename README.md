@@ -2,7 +2,7 @@
 
 # ClearTake
 
-**Version: 0.1.0 · Development preview**
+**Version: 0.1.2 · Development preview**
 
 ClearTake is a local macOS screen recorder and editor with sneeze/cough detection, reversible audio muting, video cuts, captions and MP4 export.
 
@@ -84,7 +84,7 @@ On Windows with Node 22+ x64 and Python 3.12 installed, run `Build-Windows.cmd` 
 The script installs dependencies, downloads the local sound model, bundles the Python detector, runs checks and creates:
 
 ```text
-release/ClearTake-Mac-0.1.0-arm64.dmg
+release/ClearTake-Mac-0.1.2-arm64.dmg
 ```
 
 The first build downloads several large dependencies and needs several GB of free disk space. The script checks native media-tool architecture; if an npm-provided binary is incompatible, it builds FFmpeg/FFprobe from source with Xcode command-line tools and pkg-config. No model/API credentials are needed. Subsequent app recording and sound analysis run locally.

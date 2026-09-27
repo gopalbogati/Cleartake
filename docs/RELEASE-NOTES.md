@@ -1,8 +1,12 @@
-## 0.1.1 startup checks
+## ClearTake 0.1.2 — Subject focus and smooth zoom
 
-Creates the settings directory explicitly before registering it with Electron. Startup errors now show a diagnostic message instead of leaving the app without a window. The reported launch failure on the user's Mac has not yet been reproduced: the published 0.1.0 ZIP passed signature verification and launched successfully on a clean macOS runner.
+Highlight the subject of a walkthrough with editable zoom regions. Select a moment, click **Zoom selected moment**, then **Point to subject**. Adjust timing, strength and smooth entry/exit; undo/redo and project saving preserve the changes. Preview and MP4 export use the same motion, including after cuts and speed changes.
 
-This release adds a packaged-app launch check on Mac and Windows. It verifies that the home window loads and that the preload bridge can list projects. Mac code signatures are also checked before publishing. These checks do not replace live recording tests or Apple notarization.
+Whole-display recordings can track pointer positions locally and suggest zooms from pauses in pointer movement. Tracking respects recording pause/resume, ignores other displays, and covers up to the first 60 minutes. Window recordings and imported videos support manual subject zoom. Suggestions are editable and are not face/object detection or continuous cursor-follow motion.
+
+This release also improves low-resolution zoom smoothness, supports newer FFmpeg filter options and validates Mac media-tool architecture before packaging. A native development fallback handles incompatible dependency binaries; packaged apps use their bundled tools.
+
+Validation includes 25 JavaScript tests, four sound-review tests, actual encoded motion frames, a real Mac editor window and rendered preview with generated media. The release workflow additionally checks packaged-app startup and the bundled detector on each platform, and verifies Mac code signatures. These checks do not replace live recording tests or Apple notarization.
 
 ClearTake development preview for Apple Silicon Mac and Windows x64.
 
@@ -14,7 +18,7 @@ ClearTake development preview for Apple Silicon Mac and Windows x64.
 
 ## Included
 
-Screen/window recording, optional microphone/computer audio/webcam, pause/resume, local sound-event suggestions, manual mute/cut ranges, undo/redo, trim/speed, framing, backgrounds, webcam placement, titles, SRT caption import and MP4 export.
+Screen/window recording, optional microphone/computer audio/webcam, pause/resume, local sound-event suggestions, manual mute/cut ranges, undo/redo, trim/speed, subject-focused zoom regions, pointer-based zoom suggestions, framing, solid backgrounds, webcam placement, titles, SRT caption import and MP4 export.
 
 ## Development status
 

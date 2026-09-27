@@ -24,14 +24,14 @@ Do not use the desktop `npm run build` command as the website build. The website
 
 Output app filenames:
 
-- `ClearTake-Mac-0.1.0-arm64.zip`
-- `ClearTake-Mac-0.1.0-arm64.dmg`
-- `ClearTake-Windows-0.1.0-x64.zip`
+- `ClearTake-Mac-0.1.2-arm64.zip`
+- `ClearTake-Mac-0.1.2-arm64.dmg`
+- `ClearTake-Windows-0.1.2-x64.zip`
 - Matching `.sha256` checksum files.
 
 GitHub wraps workflow artifacts in an extra ZIP. That outer artifact ZIP is not the app ZIP. The release workflow extracts artifacts and attaches the actual app packages. For a manual release, extract the artifact before attaching its inner app ZIP and checksum.
 
-Use a tag matching the app version, e.g. `v0.1.0`. Future versions must update `package.json`, package-lock.json and `engine/package.json` together. The workflow refuses to overwrite an existing release with the same tag. A prerelease is displayed as a development preview. Download buttons appear only for valid, uploaded assets belonging to that release. Source-only releases, missing assets and API failures never become fake download links.
+Use a tag matching the app version, e.g. `v0.1.2`. Future versions must update `package.json`, package-lock.json and `engine/package.json` together. The workflow refuses to overwrite an existing release with the same tag. A prerelease is displayed as a development preview. Download buttons appear only for valid, uploaded assets belonging to that release. Source-only releases, missing assets and API failures never become fake download links.
 
 ## Supported build targets and current validation
 
@@ -39,7 +39,7 @@ Use a tag matching the app version, e.g. `v0.1.0`. Future versions must update `
 - Windows: x64 Intel/AMD; ZIP containing ClearTake.exe and required companion files. Extract the complete folder before running it.
 - Intel Mac and Windows ARM64 are not included.
 
-Windows packaging and helper paths are implemented, but this development environment is Linux: it cannot verify native Windows/macOS capture or installability. A completed build is not a native recording test. The release notes retain that distinction. These development packages are not Windows code-signed or Apple-notarized.
+The build workflow validates packaging, media processing, the bundled sound detector and app startup on native Mac and Windows runners. The motion update also has a local Mac window test with generated media. A completed build is not a live recording/device-permission test. The release notes retain that distinction. These development packages are not Windows code-signed or Apple-notarized.
 
 Keep the third-party notices in the packages and satisfy the exact media-binary corresponding-source obligations documented in THIRD-PARTY.md before public binary distribution. Do not attach personal recordings to releases.
 
