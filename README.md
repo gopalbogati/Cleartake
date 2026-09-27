@@ -20,7 +20,7 @@ clearing, and you mute or cut each one. Untick it and the moment comes back.*
 
 [**Watch the 54-second version with sound →**](docs/media/cleartake-promo.mp4?raw=1)
 
-ClearTake 0.1 is a new, independently written implementation with a new interface. This directory contains no source code, interface assets or project structure copied from Recordly. It uses the third-party libraries listed in [THIRD-PARTY.md](THIRD-PARTY.md). The previous fork is a separate project and its project files are not compatible; import an exported video to edit it here.
+ClearTake brings recording, sound review, subject-focused motion and video editing into one local workspace. Its project format preserves original media and reversible edits. Supported videos can also be imported from other tools. Third-party components are listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
 ## What you can do
 
@@ -54,7 +54,7 @@ For suggestions, enable **Track pointer for zoom suggestions** before recording 
 
 Imported videos, older projects, and single-window recordings do not have a usable pointer track; manual subject zoom still works. The actual OS cursor remains part of the video. Cursor replacement, blur, bounce and continuous cursor-follow panning are not implemented. Zoom regions do not overlap and currently return to the base framing between subjects.
 
-See the [Recordly feature comparison](docs/RECORDLY-PARITY.md) for the full coverage checklist and remaining gaps. This update does not claim complete Recordly parity.
+See the [ClearTake product roadmap](docs/PRODUCT-ROADMAP.md) for current capabilities, verification results and future development priorities.
 
 ## Download website and Windows/Mac ZIPs
 
@@ -151,10 +151,10 @@ Detection in development requires `.build/venv` and `.build/yamnet`, created by 
 
 `npm test` rebuilds the UI before testing. `npm run test:window` opens an actual Electron window, exercises generated media, subject zoom, project save, and rendered preview, then closes it. It uses isolated temporary preferences/projects and saves a screenshot to `.build/motion-window.png`; it does not load or alter your recordings. A working graphical desktop is required. This does not replace permission/device testing for live screen, microphone, or webcam capture.
 
-The app's main-process entry is `app/main.cjs`. Its isolated UI is under `app/ui`. Editing, export, projects and detection are separate small modules under `engine`. There is no hidden dependency on a previous app's source tree.
+The app's main-process entry is `app/main.cjs`. Its isolated UI is under `app/ui`. Editing, export, projects and detection are separate small modules under `engine`.
 
 ## First-release boundaries
 
-This is a working source implementation, not a claim of complete feature parity with professional editors. It does not yet include multitrack clip rearrangement, clip transitions, continuous cursor-follow panning, cursor-overlay effects, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins or cloud sharing. Subject zoom regions and pointer-dwell suggestions are supported; freeform animation keyframes are not. Caption import is supported; automatic caption generation is not. Build targets are Apple Silicon Mac and Windows x64; native installation and live recording still need validation on each platform. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
+ClearTake is in development preview. Future work includes multitrack clip rearrangement, clip transitions, continuous cursor-follow panning, cursor-overlay effects, face tracking, speech transcription, speaker isolation, blur/redaction, effects plug-ins and cloud sharing. Subject zoom regions and pointer-dwell suggestions are available today; freeform animation keyframes are not yet supported. Caption import is available; automatic caption generation is planned. Build targets are Apple Silicon Mac and Windows x64; native installation and live recording still need validation on each platform. Verify native permissions, recording sync, long recordings and installation on the target Mac before a public binary release.
 
 Application code: [MIT](LICENSE). Bundled third-party components retain their own licenses.

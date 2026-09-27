@@ -1,6 +1,6 @@
 # Third-party components
 
-ClearTake application code is independently written and is licensed under MIT. Renaming an application does not change the licenses of its dependencies. Keep these notices in source distributions and include the collected notices when distributing installers.
+ClearTake application code is licensed under MIT. Third-party components retain their own licenses. Keep these notices in source distributions and include the collected notices when distributing installers.
 
 | Component | Purpose | License / source |
 | --- | --- | --- |
